@@ -1,0 +1,207 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+ 
+public class Employee{
+    public  int ID { get; set; }
+    public string Name { get; set; }
+    public int Age { get; set; }
+ 
+}
+
+public class EmployeeManager{
+    public Dictionary<int,Employee> employees {get;set;} = new Dictionary<int,Employee> ();
+ 
+    public void Add(Employee employee){
+        if(employee.ID<0){
+            throw new InvalidOperationException("Id should be positive");
+        }
+        if(string.IsNullOrWhiteSpace(employee.Name)){
+            throw new ArgumentException("Name cant be empty");
+        }
+ 
+ 
+        if(employees.ContainsKey(employee.ID)){
+            Console.WriteLine("Id already Exists.");
+        }
+        else{
+            employees.Add(employee.ID,employee);
+            Console.WriteLine("Added Successfully.");
+        }
+    }
+ 
+    public void Display(){
+        if(employees.Count==0){
+            Console.WriteLine("Dictionary Empty.");
+        }
+        else{
+            foreach (var item in employees.Values)
+            {
+                Console.WriteLine($"ID: {item.ID}, Name: {item.Name}, Age: {item.Age}");
+            }
+        }
+    }
+ 
+    public void EditEmployee(int id, string newname, int newage){
+        if(employees.ContainsKey(id)){
+            var c = employees[id];
+            c.Name = newname;
+            c.Age = newage;
+            Console.WriteLine("Edited successfully.");
+        }
+        else{
+            Console.WriteLine("Id not found.");
+        }
+    }
+    public void Delete(int id){
+        if(employees.ContainsKey(id)){
+            employees.Remove(id);
+            Console.WriteLine("Deleted");
+        }
+        else{
+            Console.WriteLine("Cant delete");
+        }
+    }
+    public void Search(string name){
+       var c = employees.Values.Where(k=>k.Name==name).ToList();
+       if(c==null){
+        Console.WriteLine("Name not found.");
+       }
+       else{
+        Console.WriteLine("Name found.");
+        foreach (var item in c)
+        {
+            Console.WriteLine($"ID: {item.ID},Name: {item.Name},Age: {item.Age}");
+        }
+       }
+    }
+ 
+     public void Search(int id){
+        if(employees.ContainsKey(id)){
+            Console.WriteLine("Found");
+            return;
+        }
+        Console.WriteLine("Name not found.");
+   
+    }
+    public void SortByName(){
+        var sl = employees.Values.OrderBy(k=>k.Name).ToList();
+        foreach (var item in sl)
+        {
+            Console.WriteLine($"ID: {item.ID}, Name: {item.Name}, Age: {item.Age}");
+        }
+    }
+ 
+    public void DeleteAgeBelow25(){
+    var c = employees.Values.Where(k=>k.Age<25).ToList();
+    if(c==null){
+        Console.WriteLine("No one with age below 25.");
+    }
+    else{
+        foreach (var item in c)
+        {
+            employees.Remove(item.ID);
+        }
+    }
+}
+}
+ 
+ 
+ 
+public class Program{
+    public static void Main(string [] args){
+ 
+    }
+}
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+ 
+public class Plant{
+    public int PlantId { get; set; }
+    public string CommonName { get; set; }
+    public string ScientificName { get; set; }
+}
+public class Program{
+static Dictionary<int,Plant> plants {get;set;} = new Dictionary<int,Plant>();
+public static void Add(Plant plant){
+        if(plants.ContainsKey(plant.PlantId)){
+            Console.WriteLine("Cant add");
+        }
+        else{
+            plants.Add(plant.PlantId,plant);
+            Console.WriteLine("Added");
+        }
+    }
+    public static void Display(){
+            if(plants.Count==0){
+                Console.WriteLine("empty");
+            }
+            else{
+                foreach (var item in plants.Values)
+                {
+                    Console.WriteLine($"PlantID:{item.PlantId},Name:{item.CommonName},ScientficName:{item.ScientificName}");
+                }
+            }
+        }
+ 
+        public static void update(int id, string name, string scientificname){
+            if(plants.ContainsKey(id)){
+                var c = plants[id];
+                c.CommonName=name;
+                c.ScientificName= scientificname;
+                Console.WriteLine("Updated");
+            }
+            else{
+                Console.WriteLine("Id not found");
+            }
+        }
+ 
+        public static void Delete(int id){
+            if(plants.ContainsKey(id)){
+                plants.Remove(id);
+                Console.WriteLine("Deleted");
+            }
+            else{
+                Console.WriteLine("Id not found");
+            }
+        }
+ 
+        public static void SearchPlant(string name){
+            var c = plants.Values.Where(k=>k.CommonName==name).ToList();
+            if(c==null){
+                Console.WriteLine("cant find");
+            }
+            else{
+                Console.WriteLine("Found");
+            }
+        }
+ 
+        public static void SortByName(){
+            var sl = plants.Values.OrderBy(k=>k.CommonName).ToList();
+            if(sl==null){
+                Console.WriteLine("nothing found");
+            }
+            else{
+                foreach (var item in sl)
+                {
+                    Console.WriteLine($"PlantID:{item.PlantId},Name:{item.CommonName},ScientficName:{item.ScientificName}");
+                }
+            }
+        }
+ 
+    public static void Main(string[] args){
+ 
+    }
+}
