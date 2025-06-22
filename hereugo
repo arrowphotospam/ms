@@ -1,0 +1,1521 @@
+using System;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        
+    }
+    
+} // Cod 1 retake architecture;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+using System;
+using dotnetapp.Models;
+
+namespace dotnetapp
+{
+    public static class ConnectionStringProvider
+    {
+        public static string ConnectionString { get; } = "replace_connection_string";
+    }
+
+    public class Program
+    {
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+
+        public static void Main(string[] args)
+        {
+
+        }
+    }
+}
+
+Cod 2 Architecture.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+JOB MGT CODE (ado.net)
+
+using System; 
+using System.Data; 
+using System.Data.SqlClient;
+using dotnetapp.Models;
+
+public static class ConnectionStringProvider { 
+public static string ConnectionString = "User ID=sa;password=examlyMssql@123; server=localhost;Database=appdb;trusted_connection=false;Persist Security Info=False;Encrypt=False"; 
+}
+
+public class Program { 
+static string connectionString = ConnectionStringProvider.ConnectionString;
+
+
+    public static void Main(string[] args)
+    {
+        while (true)
+        {
+            Console.WriteLine("\n--- Job Management Menu ---");
+            Console.WriteLine("1. Add Job");
+            Console.WriteLine("2. Display Job by ID");
+            Console.WriteLine("3. Display Jobs with Salary Above 10000");
+            Console.WriteLine("4. Display Jobs Ordered by Salary Ascending");
+            Console.WriteLine("5. Display Jobs Ordered by Salary Descending");
+            Console.WriteLine("6. Update Job");
+            Console.WriteLine("7. Delete Job by Name");
+            Console.WriteLine("8. Exit");
+            Console.Write("Enter your choice (1-8): ");
+
+            string choice = Console.ReadLine();
+
+            try
+            {
+                switch (choice)
+                {
+                    case "1":
+                        Console.Write("Enter Job Name: ");
+                        string jobName = Console.ReadLine();
+
+                        Console.Write("Enter Salary: ");
+                        decimal salary = Convert.ToDecimal(Console.ReadLine());
+                        
+                        
+                        
+                        Console.Write("Enter Manager Name: ");
+                        string manager = Console.ReadLine();
+
+                        Job newJob = new Job { JobName = jobName, Salary = salary, Manager = manager };
+                        AddJob(newJob);
+                        break;
+
+                    case "2":
+                        Console.Write("Enter Job ID: ");
+                        int jobId = Convert.ToInt32(Console.ReadLine());
+                        DisplayJobById(jobId);
+                        break;
+
+                    case "3":
+                        DisplayJobsWithSalaryAbove10000();
+                        break;
+
+                    case "4":
+                        DisplayJobsOrderByAscending();
+                        break;
+
+                    case "5":
+                        DisplayJobsOrderByDescending();
+                        break;
+
+                    case "6":
+                        Console.Write("Enter Job ID to update: ");
+                        int updateId = Convert.ToInt32(Console.ReadLine());
+
+                        Console.Write("Enter new Salary: ");
+                        decimal newSalary = Convert.ToDecimal(Console.ReadLine());
+
+                        Console.Write("Enter new Manager Name: ");
+                        string newManager = Console.ReadLine();
+
+                        UpdateJob(updateId, newSalary, newManager);
+                        break;
+
+                    case "7":
+                        Console.Write("Enter Job Name to delete: ");
+                        string deleteName = Console.ReadLine();
+                        DeleteJob(deleteName);
+                        break;
+
+                    case "8":
+                        Console.WriteLine("Exiting the application...");
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice, please try again.");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
+    }
+
+    public static void AddJob(Job job)
+    {
+        
+
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        { 
+        
+            if (salary <= 0)
+            {
+            throw new Exception("Salary should be greater than zero");
+            }
+            string query = "SELECT * FROM Jobs";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Jobs");
+
+            DataRow row = ds.Tables["Jobs"].NewRow();
+            row["JobName"] = job.JobName;
+            row["Salary"] = job.Salary;
+            row["Manager"] = job.Manager;
+
+            ds.Tables["Jobs"].Rows.Add(row);
+            adapter.Update(ds, "Jobs");
+
+            Console.WriteLine("Job added successfully.");
+        }
+    }
+
+    public static void DisplayJobById(int jobId)
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = $"SELECT * FROM Jobs WHERE JobID = {jobId}";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Jobs");
+
+            if (ds.Tables["Jobs"].Rows.Count > 0)
+            {
+                DataRow row = ds.Tables["Jobs"].Rows[0];
+                Console.WriteLine($"JobID: {row["JobID"]}\tJobName: {row["JobName"]}\tSalary: {row["Salary"]}\tManager: {row["Manager"]}");
+            }
+            else
+            {
+                Console.WriteLine($"No job found with ID {jobId}.");
+            }
+        }
+    }
+
+    public static void DisplayJobsWithSalaryAbove10000()
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = "SELECT * FROM Jobs WHERE Salary > 10000";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Jobs");
+
+            if (ds.Tables["Jobs"].Rows.Count > 0)
+            {
+                foreach (DataRow row in ds.Tables["Jobs"].Rows)
+                {
+                    Console.WriteLine($"JobID: {row["JobID"]}\tJobName: {row["JobName"]}\tSalary: {row["Salary"]}\tManager: {row["Manager"]}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("No jobs with salary above 10000 found.");
+            }
+        }
+    }
+
+    public static void DisplayJobsOrderByAscending()
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = "SELECT * FROM Jobs ORDER BY Salary ASC";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Jobs");
+            
+            foreach (DataRow row in ds.Tables["Jobs"].Rows)
+            {
+                Console.WriteLine($"JobID: {row["JobID"]}\tJobName: {row["JobName"]}\tSalary: {row["Salary"]}\tManager: {row["Manager"]}");
+            }
+          
+          }
+        }
+
+
+            
+
+    public static void DisplayJobsOrderByDescending()
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = "SELECT * FROM Jobs ORDER BY Salary DESC";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Jobs");
+
+            foreach (DataRow row in ds.Tables["Jobs"].Rows)
+            {
+                Console.WriteLine($"JobID: {row["JobID"]}\tJobName: {row["JobName"]}\tSalary: {row["Salary"]}\tManager: {row["Manager"]}");
+            }
+        }
+    }
+
+    public static void UpdateJob(int jobId, decimal newSalary, string newManager)
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = $"SELECT * FROM Jobs WHERE JobID = {jobId}";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Jobs");
+
+            if (ds.Tables["Jobs"].Rows.Count > 0)
+            {
+                DataRow row = ds.Tables["Jobs"].Rows[0];
+                row["Salary"] = newSalary;
+                row["Manager"] = newManager;
+                adapter.Update(ds, "Jobs");
+                Console.WriteLine("Job salary updated successfully.");
+            }
+            else
+            {
+                Console.WriteLine($"No job found with ID {jobId}.");
+            }
+        }
+    }
+
+    public static void DeleteJob(string jobName)
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            string query = $"SELECT * FROM Jobs WHERE JobName = '{jobName}'";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Jobs");
+
+            if (ds.Tables["Jobs"].Rows.Count > 0)
+            {
+                ds.Tables["Jobs"].Rows[0].Delete();
+                adapter.Update(ds, "Jobs");
+                Console.WriteLine("Job deleted successfully.");
+            }
+            else
+            {
+                Console.WriteLine($"No job found with Name {jobName}.");
+            }
+        }
+    }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+BANKING ACC IN ADO.NET
+
+using System; 
+using System.Data; 
+using System.Data.SqlClient;
+using dotnetapp.Models;
+
+
+namespace dotnetapp
+{
+    public static class ConnectionStringProvider
+    {
+        public static string ConnectionString { get; } = "replace_connection_string";
+    }
+
+    public class Program
+    {
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+
+        public static void Main(string[] args)
+        {
+        Console.WriteLine("Banking account system");
+        Console.WriteLine("1. Enter your name");
+        Console.Write("2. Enter the acc number");
+        Console.Write("Enter your choice: ");
+        
+        string choice = Console.ReadLine();
+        // TransactionManager tm = new TransactionManager();
+
+        try
+        {
+            switch (choice)
+            {   
+                case "1":
+                    Transaction t = new Transaction();
+                    Console.Write("Enter Account ID: ");
+                    t.AccountId = int.Parse(Console.ReadLine());
+                    Console.Write("Enter Type (Deposit/Withdrawal): ");
+                    t.TransactionType = Console.ReadLine();
+                    Console.Write("Enter Amount: ");
+                    t.Amount = double.Parse(Console.ReadLine());
+                    Console.Write("Enter Date (dd-MM-yyyy): ");
+                    t.Date = Console.ReadLine();
+                    AddTransaction(t);
+                    break;
+
+                case "2":
+                    Console.Write("Enter Transaction ID to update: ");
+                    int uid = int.Parse(Console.ReadLine());
+                    Transaction u = new Transaction();
+                    Console.Write("Enter new Account ID: ");
+                    u.AccountId = int.Parse(Console.ReadLine());
+                    Console.Write("Enter Type: ");
+                    u.TransactionType = Console.ReadLine();
+                    Console.Write("Enter Amount: ");
+                    u.Amount = double.Parse(Console.ReadLine());
+                    Console.Write("Enter Date: ");
+                    u.Date = Console.ReadLine();
+                    UpdateTransaction(uid, u);
+                    break;
+
+                case "3":
+                    Console.Write("Enter Transaction ID to delete: ");
+                    int did = int.Parse(Console.ReadLine());
+                    DeleteTransactionById(did);
+                    break;
+
+                case "4":
+                    Console.Write("Enter Account ID to search: ");
+                    int aid = int.Parse(Console.ReadLine());
+                    SearchTransactionsByAccountId(aid);
+                    break;
+
+                case "5":
+                    DisplayAllTransactions();
+                    break;
+
+                case "6":
+                    Console.WriteLine("Exiting...");
+                    return;
+
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Invalid input format.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        }
+        
+        public static void AddTransaction(Transaction ts)
+        {
+            if (ts.AccountId.ToString().Length > 12)
+                throw new ArgumentException("Invalid Account ID! Must be numeric and no more than 12 digits.");
+            if (ts.Amount < 0)
+                throw new ArgumentException("Invalid Amount! Must be greater than or equal to zero.");
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM Transactions";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                SqlCommandBuilder builder = new SqlCommandBuilder(da);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Transactions");
+
+                DataRow row = ds.Tables["Transactions"].NewRow();
+                row["AccountId"] = ts.AccountId;
+                row["TransactionType"] = ts.TransactionType;
+                row["Amount"] = ts.Amount;
+                row["Date"] = ts.Date;
+
+                ds.Tables["Transactions"].Rows.Add(row);
+                da.Update(ds, "Transactions");
+
+                Console.WriteLine("Transaction added successfully.");
+            }
+        }
+        public static void UpdateTransaction(int tid, Transaction ts)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = $"SELECT * FROM Transactions WHERE TransactionId = {tid}";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                SqlCommandBuilder builder = new SqlCommandBuilder(da);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Transactions");
+
+                if (ds.Tables["Transactions"].Rows.Count == 0)
+                {
+                    Console.WriteLine("Transaction not found.");
+                    return;
+                }
+
+                DataRow row = ds.Tables["Transactions"].Rows[0];
+                row["AccountId"] = ts.AccountId;
+                row["TransactionType"] = ts.TransactionType;
+                row["Amount"] = ts.Amount;
+                row["Date"] = ts.Date;
+
+                da.Update(ds, "Transactions");
+                Console.WriteLine("Transaction updated successfully.");
+            }
+        }
+
+        public static void DeleteTransactionById(int tid)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = $"SELECT * FROM Transactions WHERE TransactionId = {tid}";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                SqlCommandBuilder builder = new SqlCommandBuilder(da);
+                
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Transactions");
+
+                if (ds.Tables["Transactions"].Rows.Count == 0)
+                {
+                    Console.WriteLine("Transaction not found.");
+                    return;
+                }
+
+                ds.Tables["Transactions"].Rows[0].Delete();
+                da.Update(ds, "Transactions");
+                Console.WriteLine("Transaction deleted successfully.");
+            }
+        }
+
+        public static void SearchTransactionsByAccountId(int aid)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = $"SELECT * FROM Transactions WHERE AccountId = {aid}";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Transactions");
+
+                if (ds.Tables["Transactions"].Rows.Count == 0)
+                {
+                    Console.WriteLine("No transactions found for this Account ID.");
+                    return;
+                }
+
+                foreach (DataRow row in ds.Tables["Transactions"].Rows)
+                {
+                    Console.WriteLine($"ID: {row["TransactionId"]}, Type: {row["TransactionType"]}, Amount: {row["Amount"]}, Date: {row["Date"]}");
+                }
+            }
+        }
+
+        public static void DisplayAllTransactions()
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM Transactions";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Transactions");
+
+                if (ds.Tables["Transactions"].Rows.Count == 0)
+                {
+                    Console.WriteLine("No transactions available.");
+                    return;
+                }
+
+                foreach (DataRow row in ds.Tables["Transactions"].Rows)
+                {
+                    Console.WriteLine($"ID: {row["TransactionId"]}, Acc: {row["AccountId"]}, Type: {row["TransactionType"]}, Amount: {row["Amount"]}, Date: {row["Date"]}");
+                }
+            }
+        }
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+CAR MGT 
+
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using dotnetapp.Models;
+
+namespace dotnetapp
+{
+    public class ConnectionStringProvider
+    {
+        public static string ConnectionString { get; } = "your_connection_string_here";
+    }
+
+    public class Program
+    {
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+
+        public static void Main(string[] args)
+        {
+            while (true)
+            {
+                Console.WriteLine("\n--- Car Management System ---");
+                Console.WriteLine("1. Add Car");
+                Console.WriteLine("2. List Cars");
+                Console.WriteLine("3. Delete Car");
+                Console.WriteLine("4. Update Car");
+                Console.WriteLine("5. Search Car by Cost");
+                Console.WriteLine("6. Search Car by Model");
+                Console.WriteLine("7. Sort Cars by Model Ascending");
+                Console.WriteLine("8. Exit");
+                Console.Write("Enter your choice: ");
+                string choice = Console.ReadLine();
+
+                try
+                {
+                    switch (choice)
+                    {
+                        case "1":
+                            AddCar();
+                            break;
+                        case "2":
+                            ListCars();
+                            break;
+                        case "3":
+                            Console.Write("Enter Car ID to delete: ");
+                            int did = int.Parse(Console.ReadLine());
+                            DeleteCar(did);
+                            break;
+                        case "4":
+                            Console.Write("Enter Car ID to update: ");
+                            int uid = int.Parse(Console.ReadLine());
+                            UpdateCar(uid);
+                            break;
+                        case "5":
+                            Console.Write("Enter cost threshold: ");
+                            int cost = int.Parse(Console.ReadLine());
+                            SearchCarByCost(cost);
+                            break;
+                        case "6":
+                            Console.Write("Enter model keyword to search: ");
+                            string model = Console.ReadLine();
+                            SearchCarByModel(model);
+                            break;
+                        case "7":
+                            SortCarByModelAscending();
+                            break;
+                        case "8":
+                            Console.WriteLine("Exiting...");
+                            return;
+                        default:
+                            Console.WriteLine("Invalid choice.");
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                }
+            }
+        }
+
+        public static void AddCar()
+        {
+            Console.Write("Enter Car Make: ");
+            string make = Console.ReadLine();
+            Console.Write("Enter Car Model: ");
+            string model = Console.ReadLine();
+            Console.Write("Enter Car Year: ");
+            int year = int.Parse(Console.ReadLine());
+            Console.Write("Enter Service Date (dd-MM-yyyy): ");
+            string serviceDate = Console.ReadLine();
+            Console.Write("Enter Cost: ");
+            int cost = int.Parse(Console.ReadLine());
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM Cars";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                SqlCommandBuilder cb = new SqlCommandBuilder(da);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Cars");
+
+                DataRow row = ds.Tables["Cars"].NewRow();
+                row["CarMake"] = make;
+                row["CarModel"] = model;
+                row["CarYear"] = year;
+                row["CarServiceDate"] = serviceDate;
+                row["Cost"] = cost;
+
+                ds.Tables["Cars"].Rows.Add(row);
+                da.Update(ds, "Cars");
+                Console.WriteLine("Car added successfully.");
+            }
+        }
+
+        public static void ListCars()
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM Cars";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Cars");
+
+                if (ds.Tables["Cars"].Rows.Count == 0)
+                {
+                    Console.WriteLine("No Cars available.");
+                    return;
+                }
+
+                foreach (DataRow row in ds.Tables["Cars"].Rows)
+                {
+                    Console.WriteLine($"CarID: {row["CarID"]}, CarMake: {row["CarMake"]}, CarModel: {row["CarModel"]}, CarYear: {row["CarYear"]}, Service Date: {row["CarServiceDate"]}, Cost: {row["Cost"]}");
+                }
+            }
+        }
+
+        public static void DeleteCar(int id)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = $"SELECT * FROM Cars WHERE CarID = {id}";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                SqlCommandBuilder cb = new SqlCommandBuilder(da);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Cars");
+
+                if (ds.Tables["Cars"].Rows.Count == 0)
+                {
+                    Console.WriteLine("Car not found.");
+                    return;
+                }
+
+                ds.Tables["Cars"].Rows[0].Delete();
+                da.Update(ds, "Cars");
+                Console.WriteLine("Car deleted successfully.");
+            }
+        }
+
+        public static void UpdateCar(int id)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = $"SELECT * FROM Cars WHERE CarID = {id}";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                SqlCommandBuilder cb = new SqlCommandBuilder(da);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Cars");
+
+                if (ds.Tables["Cars"].Rows.Count == 0)
+                {
+                    Console.WriteLine("Car not found.");
+                    return;
+                }
+
+                DataRow row = ds.Tables["Cars"].Rows[0];
+
+                Console.Write("Enter new Make: ");
+                row["CarMake"] = Console.ReadLine();
+                Console.Write("Enter new Model: ");
+                row["CarModel"] = Console.ReadLine();
+                Console.Write("Enter new Year: ");
+                row["CarYear"] = int.Parse(Console.ReadLine());
+                Console.Write("Enter new Service Date: ");
+                row["CarServiceDate"] = Console.ReadLine();
+                Console.Write("Enter new Cost: ");
+                row["Cost"] = int.Parse(Console.ReadLine());
+
+                da.Update(ds, "Cars");
+                Console.WriteLine("Car updated successfully.");
+            }
+        }
+
+        public static void SearchCarByCost(int cost)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = $"SELECT * FROM Cars WHERE Cost >= {cost}";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Cars");
+
+                if (ds.Tables["Cars"].Rows.Count == 0)
+                {
+                    Console.WriteLine("No Cars available.");
+                    return;
+                }
+
+                foreach (DataRow row in ds.Tables["Cars"].Rows)
+                {
+                    Console.WriteLine($"CarID: {row["CarID"]}, CarMake: {row["CarMake"]}, CarModel: {row["CarModel"]}, CarYear: {row["CarYear"]}, Service Date: {row["CarServiceDate"]}, Cost: {row["Cost"]}");
+                }
+            }
+        }
+
+        public static void SearchCarByModel(string model)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = $"SELECT * FROM Cars WHERE CarModel LIKE '%{model}%'";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Cars");
+
+                if (ds.Tables["Cars"].Rows.Count == 0)
+                {
+                    Console.WriteLine("No Cars available.");
+                    return;
+                }
+
+                foreach (DataRow row in ds.Tables["Cars"].Rows)
+                {
+                    Console.WriteLine($"CarID: {row["CarID"]}, CarMake: {row["CarMake"]}, CarModel: {row["CarModel"]}, CarYear: {row["CarYear"]}, Service Date: {row["CarServiceDate"]}, Cost: {row["Cost"]}");
+                }
+            }
+        }
+
+        public static void SortCarByModelAscending()
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM Cars ORDER BY CarModel ASC";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Cars");
+
+                if (ds.Tables["Cars"].Rows.Count == 0)
+                {
+                    Console.WriteLine("No Cars available.");
+                    return;
+                }
+
+                foreach (DataRow row in ds.Tables["Cars"].Rows)
+                {
+                    Console.WriteLine($"CarID: {row["CarID"]}, CarMake: {row["CarMake"]}, CarModel: {row["CarModel"]}, CarYear: {row["CarYear"]}, Service Date: {row["CarServiceDate"]}, Cost: {row["Cost"]}");
+                }
+            }
+        }
+    }
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Meals mgt
+
+
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using dotnetapp.Models;
+
+namespace dotnetapp
+{
+    public class ConnectionStringProvider
+    {
+        public static string ConnectionString { get; } = "replace_connection_string";
+    }
+
+    public class Program
+    {
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+
+        public static void Main(string[] args)
+        {
+            while (true)
+            {
+                Console.WriteLine("\n--- Meal Management System ---");
+                Console.WriteLine("1. Add Meal");
+                Console.WriteLine("2. List Meals");
+                Console.WriteLine("3. Update Meal");
+                Console.WriteLine("4. Search Meals by Name");
+                Console.WriteLine("5. Search Meals with Calories > 1000");
+                Console.WriteLine("6. Sort Meals by Name Asc/Desc");
+                Console.WriteLine("7. Exit");
+                Console.Write("Enter your choice: ");
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Meal meal = new Meal();
+                        Console.Write("Enter Meal Name: ");
+                        meal.MealName = Console.ReadLine();
+                        Console.Write("Enter Day of Week: ");
+                        meal.DayOfWeek = Console.ReadLine();
+                        Console.Write("Enter Calories: ");
+                        meal.Calories = int.Parse(Console.ReadLine());
+                        AddMeal(meal);
+                        break;
+
+                    case "2":
+                        ListMeals();
+                        break;
+
+                    case "3":
+                        Console.Write("Enter Meal ID: ");
+                        int id = int.Parse(Console.ReadLine());
+                        Console.Write("Enter new Meal Name: ");
+                        string name = Console.ReadLine();
+                        Console.Write("Enter new DayOfWeek: ");
+                        string day = Console.ReadLine();
+                        Console.Write("Enter new Calories: ");
+                        int cal = int.Parse(Console.ReadLine());
+                        UpdateMeal(id, name, day, cal);
+                        break;
+
+                    case "4":
+                        Console.Write("Enter name to search: ");
+                        string searchName = Console.ReadLine();
+                        SearchMealsByMealName(searchName);
+                        break;
+
+                    case "5":
+                        SearchMealsIfCaloriesMoreThan1000();
+                        break;
+
+                    case "6":
+                        SortMealsByMealNameAscendingOrDescending();
+                        break;
+
+                    case "7":
+                        Console.WriteLine("Exiting the application...");
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice, please try again.");
+                        break;
+                }
+            }
+        }
+
+        public static void AddMeal(Meal meal)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Meals", conn);
+                SqlCommandBuilder cb = new SqlCommandBuilder(da);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Meals");
+
+                DataRow row = ds.Tables["Meals"].NewRow();
+                row["MealName"] = meal.MealName;
+                row["DayOfWeek"] = meal.DayOfWeek;
+                row["Calories"] = meal.Calories;
+
+                ds.Tables["Meals"].Rows.Add(row);
+                da.Update(ds, "Meals");
+                Console.WriteLine("Meal added successfully.");
+            }
+        }
+
+        public static void ListMeals()
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Meals", conn);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Meals");
+
+                if (ds.Tables["Meals"].Rows.Count == 0)
+                {
+                    Console.WriteLine("No Meals available.");
+                    return;
+                }
+
+                foreach (DataRow row in ds.Tables["Meals"].Rows)
+                {
+                    Console.WriteLine($"MealID: {row["MealID"]} | MealName: {row["MealName"]} | DayOfWeek: {row["DayOfWeek"]} | Calories: {row["Calories"]}");
+                }
+            }
+        }
+
+        public static void UpdateMeal(int mealID, string newMealName, string newDayOfWeek, int newCalories)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlDataAdapter da = new SqlDataAdapter($"SELECT * FROM Meals WHERE MealID={mealID}", conn);
+                SqlCommandBuilder cb = new SqlCommandBuilder(da);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Meals");
+
+                if (ds.Tables["Meals"].Rows.Count == 0)
+                {
+                    Console.WriteLine("Meal not found.");
+                    return;
+                }
+
+                DataRow row = ds.Tables["Meals"].Rows[0];
+                row["MealName"] = newMealName;
+                row["DayOfWeek"] = newDayOfWeek;
+                row["Calories"] = newCalories;
+
+                da.Update(ds, "Meals");
+                Console.WriteLine("Meal details updated successfully.");
+            }
+        }
+
+        public static void SearchMealsByMealName(string name)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlDataAdapter da = new SqlDataAdapter($"SELECT * FROM Meals WHERE MealName LIKE '%{name}%'", conn);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Meals");
+
+                foreach (DataRow row in ds.Tables["Meals"].Rows)
+                {
+                    Console.WriteLine($"MealID: {row["MealID"]} | MealName: {row["MealName"]} | DayOfWeek: {row["DayOfWeek"]} | Calories: {row["Calories"]}");
+                }
+            }
+        }
+
+        public static void SearchMealsIfCaloriesMoreThan1000()
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Meals WHERE Calories > 1000", conn);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Meals");
+
+                foreach (DataRow row in ds.Tables["Meals"].Rows)
+                {
+                    Console.WriteLine($"MealID: {row["MealID"]} | MealName: {row["MealName"]} | DayOfWeek: {row["DayOfWeek"]} | Calories: {row["Calories"]}");
+                }
+            }
+        }
+
+        public static void SortMealsByMealNameAscendingOrDescending()
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Meals ORDER BY MealName ASC", conn);
+                DataSet ds = new DataSet();
+                da.Fill(ds, "Meals");
+
+                foreach (DataRow row in ds.Tables["Meals"].Rows)
+                {
+                    Console.WriteLine($"MealID: {row["MealID"]} | MealName: {row["MealName"]} | DayOfWeek: {row["DayOfWeek"]} | Calories: {row["Calories"]}");
+                }
+            }
+        }
+    }
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+team mgt(DIctionary)
+
+
+using System;
+using System.Collections.Generic;
+
+public class Team
+{
+    public int TeamId { get; set; }
+    public string TeamName { get; set; }
+    public string Captain { get; set; }
+    public string Country { get; set; }
+    
+    public Team(){}
+    public Team(int teamId , string teamName , string captain , string country)
+    {
+        TeamId = teamId;
+        TeamName = teamName;
+        Captain = captain;
+        Country = country;
+    }
+
+    public void DisplayTeamDetails()
+    {
+        Console.WriteLine($"Team ID: {TeamId}, TeamName: {TeamName}, Captain: {Captain}, Country: {Country}");
+    }
+}
+
+public class TeamManager
+{
+
+    private static Dictionary<int, Team> teams = new Dictionary<int, Team>();
+
+    public static void AddTeam(Team team)
+    {
+        if (teams.ContainsKey(team.TeamId))
+        {
+            Console.WriteLine($"A team with ID {team.TeamId} already exists.");
+            return;
+        }
+
+        teams.Add(team.TeamId, team);
+        Console.WriteLine("Team added successfully.");
+        team.DisplayTeamDetails();
+    }
+
+    public static void UpdateTeam(int teamId, string newTeamName, string newCaptain, string newCountry)
+    {
+        if (!teams.ContainsKey(teamId))
+        {
+            Console.WriteLine($"Invalid Team ID: {teamId}. Please try again.");
+            return;
+        }
+
+        Team team = teams[teamId];
+        
+        team.TeamName = newTeamName;
+        team.Captain = newCaptain;
+        team.Country = newCountry;
+
+        Console.WriteLine("Team details updated:");
+        team.DisplayTeamDetails();
+    }
+
+    public static void SearchTeam(int teamId)
+    {
+        if (!teams.ContainsKey(teamId))
+        {
+            Console.WriteLine($"Invalid Team ID: {teamId}. Please try again.");
+            return;
+        }
+
+        Console.WriteLine("Team Found:");
+        teams[teamId].DisplayTeamDetails();
+    }
+
+		public static void SerchByNAme(string n)
+    {
+    	forech(var x in teams)
+      {
+      	if(x.TeamName == n)
+        {
+        	 x.DisplayTeamDetails();
+				}
+			}
+		}
+    public static void DisplayTeams()
+    {
+        if (teams.Count == 0)
+        {
+            Console.WriteLine("No teams available.");
+            return;
+        }
+
+        Console.WriteLine("Team Details:");
+        foreach (var team in teams.Values)
+        {
+            team.DisplayTeamDetails();
+        }
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        while (true)
+        {
+            Console.WriteLine("\nMenu Options:");
+            Console.WriteLine("1. Add Team");
+            Console.WriteLine("2. Update Team");
+            Console.WriteLine("3. Search Team");
+            Console.WriteLine("4. Display Teams");
+            Console.WriteLine("5. Exit");
+            Console.Write("Enter your choice: ");
+            string input = Console.ReadLine();
+
+            switch (input)
+            {
+                case "1":
+                    Team newTeam = new Team();
+                    Console.Write("Enter Team ID: ");
+                    newTeam.TeamId = int.Parse(Console.ReadLine());
+                    Console.Write("Enter Team Name: ");
+                    newTeam.TeamName = Console.ReadLine();
+                    Console.Write("Enter Captain: ");
+                    newTeam.Captain = Console.ReadLine();
+                    Console.Write("Enter Country: ");
+                    newTeam.Country = Console.ReadLine();
+
+                    TeamManager.AddTeam(newTeam);
+                    break;
+
+                case "2":
+                    Console.Write("Enter Team ID to update: ");
+                    int updateId = int.Parse(Console.ReadLine());
+                    Console.Write("Enter New Team Name: ");
+                    string newName = Console.ReadLine();
+                    Console.Write("Enter New Captain: ");
+                    string newCaptain = Console.ReadLine();
+                    Console.Write("Enter New Country: ");
+                    string newCountry = Console.ReadLine();
+
+                    TeamManager.UpdateTeam(updateId, newName, newCaptain, newCountry);
+                    break;
+
+                case "3":
+                    Console.Write("Enter Team ID to search: ");
+                    int searchId = int.Parse(Console.ReadLine());
+                    TeamManager.SearchTeam(searchId);
+                    break;
+
+                case "4":
+                    TeamManager.DisplayTeams();
+                    break;
+
+                case "5":
+                    Console.WriteLine("Exiting program...");
+                    return;
+
+                default:
+                    Console.WriteLine("Invalid choice, please try again.");
+                    break;
+            }
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Hotel mgt Collectiions ArrayList 
+
+using System;
+using System.Collections;
+using dotnetapp.Models;
+
+
+
+public class HotelManager
+{
+    private ArrayList hotels = new ArrayList();
+
+    public void AddHotel()
+    {
+        try
+        {
+            Hotel hotel = new Hotel();
+
+            Console.Write("Enter Hotel ID: ");
+            hotel.Id = int.Parse(Console.ReadLine());
+
+            Console.Write("Enter Hotel Name: ");
+            hotel.Name = Console.ReadLine();
+            if(string.IsNullOrWhiteSpace(hotel.Name)){
+            throw new ArgumentException("fhugf");
+            }
+
+            Console.Write("Enter Hotel Location: ");
+            hotel.Location = Console.ReadLine();
+
+            Console.Write("Enter Hotel Rating: ");
+            hotel.Rating = double.Parse(Console.ReadLine());
+
+            hotels.Add(hotel);
+            Console.WriteLine("Hotel added successfully.\n");
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Invalid input. Please enter the correct data types.\n");
+        }
+    }
+
+    public void UpdateHotel()
+    {
+        Console.Write("Enter Hotel ID to update: ");
+        if (!int.TryParse(Console.ReadLine(), out int id))
+        {
+            Console.WriteLine("Invalid ID format.\n");
+            return;
+        }
+
+        foreach (Hotel hotel in hotels)
+        {
+            if (hotel.Id == id)
+            {
+                Console.Write("Enter New Name: ");
+                hotel.Name = Console.ReadLine();
+
+                Console.Write("Enter New Location: ");
+                hotel.Location = Console.ReadLine();
+
+                Console.Write("Enter New Rating: ");
+                if (!double.TryParse(Console.ReadLine(), out double newRating))
+                {
+                    Console.WriteLine("Invalid rating format.\n");
+                    return;
+                }
+
+                hotel.Rating = newRating;
+
+                Console.WriteLine("Hotel details updated.\n");
+                return;
+            }
+        }
+
+        Console.WriteLine("Hotel not found.\n");
+    }
+
+    public void DeleteHotelById()
+    {
+        Console.Write("Enter Hotel ID to delete: ");
+        if (!int.TryParse(Console.ReadLine(), out int id))
+        {
+            Console.WriteLine("Invalid ID format.\n");
+            return;
+        }
+
+        for (int i = 0; i < hotels.Count; i++)
+        {
+            Hotel hotel = (Hotel)hotels[i];
+            if (hotel.Id == id)
+            {
+                hotels.RemoveAt(i);
+                Console.WriteLine("Hotel deleted successfully.\n");
+                return;
+            }
+        }
+
+        Console.WriteLine("Hotel not found.\n");
+    }
+
+    public void SearchHotels()
+    {
+        Console.Write("Enter minimum rating threshold: ");
+        if (!double.TryParse(Console.ReadLine(), out double threshold))
+        {
+            Console.WriteLine("Invalid rating input.\n");
+            return;
+        }
+
+        bool found = false;
+        foreach (Hotel hotel in hotels)
+        {
+            if (hotel.Rating >= threshold)
+            {
+                Console.WriteLine($"Id: {hotel.Id}, Name: {hotel.Name}, Location: {hotel.Location}, Rating: {hotel.Rating}");
+                found = true;
+            }
+        }
+
+        if (!found)
+        {
+            Console.WriteLine("No hotels found with this rating threshold.\n");
+        }
+    }
+
+    public void DisplayAllHotels()
+    {
+        if (hotels.Count == 0)
+        {
+            Console.WriteLine("No hotels available.\n");
+            return;
+        }
+
+        foreach (Hotel hotel in hotels)
+        {
+            Console.WriteLine($"Id: {hotel.Id}, Name: {hotel.Name}, Location: {hotel.Location}, Rating: {hotel.Rating}");
+        }
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        HotelManager manager = new HotelManager();
+        while (true)
+        {
+            Console.WriteLine("\nHotel Management System");
+            Console.WriteLine("1. Add Hotel");
+            Console.WriteLine("2. Update Hotel");
+            Console.WriteLine("3. Delete Hotel");
+            Console.WriteLine("4. Search Hotels");
+            Console.WriteLine("5. Display All Hotels");
+            Console.WriteLine("6. Exit");
+            Console.Write("Enter your choice: ");
+
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    manager.AddHotel();
+                    break;
+                case "2":
+                    manager.UpdateHotel();
+                    break;
+                case "3":
+                    manager.DeleteHotelById();
+                    break;
+                case "4":
+                    manager.SearchHotels();
+                    break;
+                case "5":
+                    manager.DisplayAllHotels();
+                    break;
+                case "6":
+                    Console.WriteLine("Exiting application...");
+                    return;
+                default:
+                    Console.WriteLine("Invalid choice. Try again.\n");
+                    break;
+            }
+        }
+    }
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+PetManager sortedList
+
+
+using System;
+using System.Collections.Generic;
+
+public class Pet
+{
+    public int PetId { get; set; }
+    public string Name { get; set; }
+    public string Type { get; set; }
+    public int Age { get; set; }
+}
+
+public class PetManager
+{
+    private SortedList<int, Pet> pets = new SortedList<int, Pet>();
+
+    public void AddPet(Pet pet)
+    {
+        if (pets.ContainsKey(pet.PetId))
+        {
+            Console.WriteLine($"A pet with ID {pet.PetId} already exists.");
+        }
+        else
+        {
+            pets.Add(pet.PetId, pet);
+            Console.WriteLine("Pet added successfully.");
+        }
+    }
+
+    public void EditPet(int petId, string newName, string newType, int newAge)
+    {
+        if (pets.ContainsKey(petId))
+        {
+            Pet pet = pets[petId];
+            pet.Name = newName;
+            pet.Type = newType;
+            pet.Age = newAge;
+            Console.WriteLine("Pet details updated successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"No pet found with ID {petId}.");
+        }
+    }
+
+    public void SearchPetById(int petId)
+    {
+        if (pets.ContainsKey(petId))
+        {
+            Pet pet = pets[petId];
+            Console.WriteLine($"Pet ID: {pet.PetId}, Name: {pet.Name}, Type: {pet.Type}, Age: {pet.Age}");
+        }
+        else
+        {
+            Console.WriteLine($"A pet with ID {petId} not found.");
+        }
+    }
+
+    public void DeletePetById(int petId)
+    {
+        if (pets.ContainsKey(petId))
+        {
+            pets.Remove(petId);
+            Console.WriteLine("Pet deleted successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"A pet with ID {petId} not found.");
+        }
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        PetManager manager = new PetManager();
+
+        while (true)
+        {
+            Console.WriteLine("\nPet Management System");
+            Console.WriteLine("1. Add Pet");
+            Console.WriteLine("2. Edit Pet by ID");
+            Console.WriteLine("3. Search Pet by ID");
+            Console.WriteLine("4. Delete Pet by ID");
+            Console.WriteLine("5. Exit");
+            Console.Write("Enter your choice: ");
+
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    try
+                    {
+                        Pet pet = new Pet();
+                        Console.Write("Enter Pet ID: ");
+                        pet.PetId = int.Parse(Console.ReadLine());
+
+                        Console.Write("Enter Pet Name: ");
+                        pet.Name = Console.ReadLine();
+
+                        Console.Write("Enter Pet Type: ");
+                        pet.Type = Console.ReadLine();
+
+                        Console.Write("Enter Pet Age: ");
+                        pet.Age = int.Parse(Console.ReadLine());
+
+                        manager.AddPet(pet);
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Invalid input. Please enter correct data types.");
+                    }
+                    break;
+
+                case "2":
+                    try
+                    {
+                        Console.Write("Enter Pet ID to edit: ");
+                        int id = int.Parse(Console.ReadLine());
+
+                        Console.Write("Enter new Name: ");
+                        string name = Console.ReadLine();
+
+                        Console.Write("Enter new Type: ");
+                        string type = Console.ReadLine();
+
+                        Console.Write("Enter new Age: ");
+                        int age = int.Parse(Console.ReadLine());
+
+                        manager.EditPet(id, name, type, age);
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Invalid input.");
+                    }
+                    break;
+
+                case "3":
+                    Console.Write("Enter Pet ID to search: ");
+                    if (int.TryParse(Console.ReadLine(), out int searchId))
+                    {
+                        manager.SearchPetById(searchId);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid ID format.");
+                    }
+                    break;
+
+                case "4":
+                    Console.Write("Enter Pet ID to delete: ");
+                    if (int.TryParse(Console.ReadLine(), out int deleteId))
+                    {
+                        manager.DeletePetById(deleteId);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid ID format.");
+                    }
+                    break;
+
+                case "5":
+                    Console.WriteLine("Exiting program...");
+                    return;
+
+                default:
+                    Console.WriteLine("Invalid choice, please try again.");
+                    break;
+            }
+        }
+    }
+}
