@@ -1,0 +1,77 @@
+skeletonnnn ado
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+ 
+namespace DisconnectedArchitecture.Models
+{
+    // Create your Employee Class here...
+    public class Employee
+    {
+       
+        public string Name{get;set;}
+        public string Address{get;set;}
+        public int Age{get;set;}
+    }
+}                                                                              -----------------------------------------------------using System;
+using System.Data;
+using System.Data.SqlClient;
+using DisconnectedArchitecture.Models;
+//using Internal;
+ 
+namespace DisconnectedArchitecture
+{
+ 
+    public static class ConnectionStringProvider
+    {
+        // Replace with your actual connection string
+        public static string ConnectionString { get; } = "User ID=sa;password=examlyMssql@123;server=localhost;Database=appdb;trusted_connection=false;Persist Security Info=False;Encrypt=False;";
+    }
+ 
+    public class Program
+    {
+        // Replace with your actual connection string
+        static string connectionString = ConnectionStringProvider.ConnectionString;
+ 
+        static void Main(string[] args)
+        {                                                                      }
+           
+ 
+           
+        }
+        // Change your method names (xyz) to appropriate name
+        public static void AddEmployee(Employee employee)
+        {
+            using(SqlConnection con=new SqlConnection(ConnectionStringProvider.ConnectionString))
+            {
+                SqlCommand cmd=new SqlCommand("Select * from Employee",con);
+                SqlDataAdapter adapter=new SqlDataAdapter(cmd);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                DataSet ds=new DataSet();
+                adapter.Fill(ds,"Employee");
+                DataTable dt=ds.Tables["Employee"];                   }
+            // Write your code to add new employee
+        }
+ 
+        public static void ListEmployees()
+        {
+             using(SqlConnection con=new SqlConnection(ConnectionStringProvider.ConnectionString))
+            {
+                SqlCommand cmd=new SqlCommand("Select * from Employee",con);
+                SqlDataAdapter adapter=new SqlDataAdapter(cmd);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                DataSet ds=new DataSet();
+                adapter.Fill(ds,"Employee");
+                DataTable dt=ds.Tables["Employee"];   } }                                                                    public static void UpdateEmployee(int employeeID, string name,string address,int age)
+        {
+             using(SqlConnection con=new SqlConnection(ConnectionStringProvider))
+            {
+                SqlCommand cmd=new SqlCommand("Select * from Employee",con);
+                SqlDataAdapter adapter=new SqlDataAdapter(cmd);
+                SqlCommandBuilder builder=new SqlCommandBuilder(adapter);
+                DataSet ds=new DataSet();
+                adapter.Fill(ds,"Employee");
+                DataTable dt=ds.Tables["Employee"];            }}
