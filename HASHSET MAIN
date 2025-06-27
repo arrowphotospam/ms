@@ -252,3 +252,240 @@ public class Program
         }
     }
 }
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Pet
+{
+    public int PetId{get; set;}
+    public string Name{get; set;}
+    public string Type{get; set;}
+    public int Age{get; set;}
+
+    public Pet(int id,string name,string type,int age)
+    {
+        PetId=id;
+        Name=name;
+        Type=type;
+        Age=age;
+    }
+
+    public override string ToString()
+    {
+        return $"ID: {PetId}, Name: {Name}, Type: {Type}, Age: {Age}";
+    }
+
+    public override bool Equals(object obj)
+    {
+        if(obj==null||GetType()!=obj.GetType())
+            return false;
+        Pet other=(Pet)obj;
+        return PetId==other.PetId;
+    }
+
+    public override int GetHashCode()
+    {
+        return PetId.GetHashCode();
+    }
+}
+
+public class PetManager
+{
+    public HashSet<HashSet<Pet>> pets = new HashSet<HashSet<Pet>>(){ new HashSet<Pet>() };
+
+    public void AddPet(Pet pet)
+    {
+        var set = pets.First();
+        if(set.Contains(pet))
+            Console.WriteLine($"A pet with ID {pet.PetId} already exists.");
+        else{
+            set.Add(pet);
+            Console.WriteLine("Pet added successfully.");
+        }
+    }
+
+    public void ReadPetById(int id)
+    {
+        var set = pets.First();
+        var p = set.FirstOrDefault(x => x.PetId == id);
+        if(p != null) Console.WriteLine(p.ToString());
+        else Console.WriteLine($"No pet found with ID {id}.");
+    }
+
+    public void ReadPetByName(string name)
+    {
+        var set = pets.First();
+        var found = set.Where(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
+        if(found.Count==0) Console.WriteLine($"No pet found with Name '{name}'.");
+        else foreach(var p in found) Console.WriteLine(p.ToString());
+    }
+
+    public void UpdatePetById(int id,string newName,string newType,int newAge)
+    {
+        var set = pets.First();
+        foreach(Pet p in set)
+        {
+            if(p.PetId==id)
+            {
+                p.Name=newName;
+                p.Type=newType;
+                p.Age=newAge;
+                Console.WriteLine("Pet updated successfully.");
+                return;
+            }
+        }
+        Console.WriteLine($"No pet found with ID {id}.");
+    }
+
+    public void UpdatePetByName(string name,string newName,string newType,int newAge)
+    {
+        var set = pets.First();
+        bool updated=false;
+        foreach(Pet p in set)
+        {
+            if(p.Name.Equals(name,StringComparison.OrdinalIgnoreCase))
+            {
+                p.Name=newName;
+                p.Type=newType;
+                p.Age=newAge;
+                updated=true;
+            }
+        }
+        Console.WriteLine(updated?"Pet(s) updated successfully.":$"No pet found with Name '{name}'.");
+    }
+
+    public void DeletePetById(int id)
+    {
+        var set = pets.First();
+        Pet toRemove = set.FirstOrDefault(p => p.PetId == id);
+        if(toRemove != null)
+        {
+            set.Remove(toRemove);
+            Console.WriteLine("Pet deleted successfully.");
+        }
+        else
+            Console.WriteLine($"No pet found with ID {id}.");
+    }
+
+    public void DeletePetByName(string name)
+    {
+        var set = pets.First();
+        var toRemove = set.Where(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
+        if(toRemove.Count == 0)
+            Console.WriteLine($"No pet found with Name '{name}'.");
+        else
+        {
+            foreach(var p in toRemove)
+                set.Remove(p);
+            Console.WriteLine($"{toRemove.Count} pet(s) deleted.");
+        }
+    }
+
+    public void SortPetsById()
+    {
+        var set = pets.First();
+        var sorted = set.OrderBy(p => p.PetId).ToList();
+        Console.WriteLine("Pets sorted by ID:");
+        foreach(var p in sorted) Console.WriteLine(p.ToString());
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        PetManager manager=new PetManager();
+        while(true)
+        {
+            Console.WriteLine("\nMenu:");
+            Console.WriteLine("1. Add Pet");
+            Console.WriteLine("2. Read by ID");
+            Console.WriteLine("3. Read by Name");
+            Console.WriteLine("4. Update by ID");
+            Console.WriteLine("5. Update by Name");
+            Console.WriteLine("6. Delete by ID");
+            Console.WriteLine("7. Delete by Name");
+            Console.WriteLine("8. Sort by ID");
+            Console.WriteLine("9. Exit");
+            Console.Write("Enter your choice: ");
+            string choice=Console.ReadLine();
+            try
+            {
+                switch(choice)
+                {
+                    case "1":
+                        Console.Write("Enter Pet ID: ");
+                        int id=int.Parse(Console.ReadLine());
+                        Console.Write("Enter Name: ");
+                        string name=Console.ReadLine();
+                        Console.Write("Enter Type: ");
+                        string type=Console.ReadLine();
+                        Console.Write("Enter Age: ");
+                        int age=int.Parse(Console.ReadLine());
+                        manager.AddPet(new Pet(id,name,type,age));
+                        break;
+                    case "2":
+                        Console.Write("Enter ID to read: ");
+                        manager.ReadPetById(int.Parse(Console.ReadLine()));
+                        break;
+                    case "3":
+                        Console.Write("Enter Name to read: ");
+                        manager.ReadPetByName(Console.ReadLine());
+                        break;
+                    case "4":
+                        Console.Write("Enter ID to update: ");
+                        int uid=int.Parse(Console.ReadLine());
+                        Console.Write("Enter new Name: ");
+                        string uname=Console.ReadLine();
+                        Console.Write("Enter new Type: ");
+                        string utype=Console.ReadLine();
+                        Console.Write("Enter new Age: ");
+                        int uage=int.Parse(Console.ReadLine());
+                        manager.UpdatePetById(uid,uname,utype,uage);
+                        break;
+                    case "5":
+                        Console.Write("Enter Name to update: ");
+                        string oldname=Console.ReadLine();
+                        Console.Write("Enter new Name: ");
+                        string newname=Console.ReadLine();
+                        Console.Write("Enter new Type: ");
+                        string ntype=Console.ReadLine();
+                        Console.Write("Enter new Age: ");
+                        int nage=int.Parse(Console.ReadLine());
+                        manager.UpdatePetByName(oldname,newname,ntype,nage);
+                        break;
+                    case "6":
+                        Console.Write("Enter ID to delete: ");
+                        manager.DeletePetById(int.Parse(Console.ReadLine()));
+                        break;
+                    case "7":
+                        Console.Write("Enter Name to delete: ");
+                        manager.DeletePetByName(Console.ReadLine());
+                        break;
+                    case "8":
+                        manager.SortPetsById();
+                        break;
+                    case "9":
+                        Console.WriteLine("Exiting...");
+                        return;
+                    default:
+                        Console.WriteLine("Invalid choice.");
+                        break;
+                }
+            }
+            catch(FormatException)
+            {
+                Console.WriteLine("Invalid input format. Please enter numeric values where required.");
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}");
+            }
+        }
+    }
+}
+
