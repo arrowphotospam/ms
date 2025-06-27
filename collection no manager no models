@@ -1,0 +1,181 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Practice_List_Collection
+{
+    public class Animal
+    {
+        public int AnimalId { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public int Age { get; set; }
+
+        public Animal()
+        {
+            Name = string.Empty;
+            Type = string.Empty;
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            List<Animal> animals = new List<Animal>();
+            bool exit = false;
+
+            while (!exit)
+            {
+                Console.WriteLine("\nMenu:");
+                Console.WriteLine("1. Add Animal");
+                Console.WriteLine("2. Edit Animal by ID");
+                Console.WriteLine("3. Search Animal by Name");
+                Console.WriteLine("4. Delete Animal by ID");
+                Console.WriteLine("5. Display All Animals");
+                Console.WriteLine("6. Sort by Animal names");
+                Console.WriteLine("7. Exit");
+                Console.Write("Enter your choice: ");
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Console.Write("Enter Animal ID: ");
+                        if (!int.TryParse(Console.ReadLine(), out int id))
+                        {
+                            Console.WriteLine("Invalid ID.");
+                            break;
+                        }
+
+                        if (animals.Any(x => x.AnimalId == id))
+                        {
+                            Console.WriteLine("Animal ID already exists.");
+                            break;
+                        }
+
+                        Console.Write("Enter Animal Name: ");
+                        string name = Console.ReadLine();
+
+                        Console.Write("Enter Animal Type: ");
+                        string type = Console.ReadLine();
+
+                        Console.Write("Enter Animal Age: ");
+                        if (!int.TryParse(Console.ReadLine(), out int age))
+                        {
+                            Console.WriteLine("Invalid age.");
+                            break;
+                        }
+
+                        animals.Add(new Animal
+                        {
+                            AnimalId = id,
+                            Name = name,
+                            Type = type,
+                            Age = age
+                        });
+
+                        Console.WriteLine("Animal added successfully.");
+                        break;
+
+                    case "2":
+                        Console.Write("Enter Animal ID to edit: ");
+                        if (!int.TryParse(Console.ReadLine(), out int editId))
+                        {
+                            Console.WriteLine("Invalid ID.");
+                            break;
+                        }
+
+                        Animal existing = animals.FirstOrDefault(x => x.AnimalId == editId);
+                        if (existing != null)
+                        {
+                            Console.Write("Enter new Name: ");
+                            existing.Name = Console.ReadLine();
+
+                            Console.Write("Enter new Type: ");
+                            existing.Type = Console.ReadLine();
+
+                            Console.Write("Enter new Age: ");
+                            if (!int.TryParse(Console.ReadLine(), out int newAge))
+                            {
+                                Console.WriteLine("Invalid age.");
+                                break;
+                            }
+
+                            existing.Age = newAge;
+                            Console.WriteLine("Animal updated successfully.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Animal not found.");
+                        }
+                        break;
+
+                    case "3":
+                        Console.Write("Enter name to search: ");
+                        string searchName = Console.ReadLine();
+                        var found = animals.Where(x => x.Name.Equals(searchName, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                        if (found.Count == 0)
+                        {
+                            Console.WriteLine("No animal found.");
+                        }
+                        else
+                        {
+                            foreach (var ani in found)
+                                Console.WriteLine($"ID: {ani.AnimalId}, Name: {ani.Name}, Type: {ani.Type}, Age: {ani.Age}");
+                        }
+                        break;
+
+                    case "4":
+                        Console.Write("Enter Animal ID to delete: ");
+                        if (!int.TryParse(Console.ReadLine(), out int delId))
+                        {
+                            Console.WriteLine("Invalid ID.");
+                            break;
+                        }
+
+                        Animal toRemove = animals.FirstOrDefault(x => x.AnimalId == delId);
+                        if (toRemove != null)
+                        {
+                            animals.Remove(toRemove);
+                            Console.WriteLine("Animal deleted successfully.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Animal not found.");
+                        }
+                        break;
+
+                    case "5":
+                        if (animals.Count == 0)
+                        {
+                            Console.WriteLine("No animals available.");
+                        }
+                        else
+                        {
+                            foreach (var ani in animals)
+                                Console.WriteLine($"ID: {ani.AnimalId}, Name: {ani.Name}, Type: {ani.Type}, Age: {ani.Age}");
+                        }
+                        break;
+
+                    case "6":
+                        animals = animals.OrderBy(x => x.Name).ToList();
+                        Console.WriteLine("Animals sorted by name.");
+                        foreach (var ani in animals)
+                            Console.WriteLine($"ID: {ani.AnimalId}, Name: {ani.Name}, Type: {ani.Type}, Age: {ani.Age}");
+                        break;
+
+                    case "7":
+                        exit = true;
+                        Console.WriteLine("Exiting...");
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice.");
+                        break;
+                }
+            }
+        }
+    }
+}
